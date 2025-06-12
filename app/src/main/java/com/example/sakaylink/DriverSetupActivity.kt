@@ -1,5 +1,6 @@
 package com.example.sakaylink
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -41,6 +42,7 @@ class DriverSetupActivity : AppCompatActivity() {
     private var driverLicenseUri: Uri? = null
     private var backgroundCheckUri: Uri? = null
 
+    @SuppressLint("SetTextI18n")
     private val licensePickerLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
@@ -51,6 +53,7 @@ class DriverSetupActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private val backgroundCheckPickerLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
@@ -256,15 +259,15 @@ class DriverSetupActivity : AppCompatActivity() {
             null
         }
 
-        val driverData = hashMapOf(
-            "vehicleInfo" to hashMapOf(
+        val driverData = mapOf(
+            "vehicleInfo" to mapOf(
                 "make" to etVehicleMake.text.toString().trim(),
                 "model" to etVehicleModel.text.toString().trim(),
                 "color" to etVehicleColor.text.toString().trim(),
                 "plateNumber" to etPlateNumber.text.toString().trim(),
                 "year" to etVehicleYear.text.toString().toInt()
             ),
-            "credentials" to hashMapOf(
+            "credentials" to mapOf(
                 "driverLicenseUrl" to (licenseUrl ?: ""),
                 "licenseNumber" to etLicenseNumber.text.toString().trim(),
                 "licenseExpiry" to if (expiryDate != null) Timestamp(expiryDate) else null,
@@ -275,7 +278,7 @@ class DriverSetupActivity : AppCompatActivity() {
         )
 
         db.collection("drivers").document(uid)
-            .update(driverData as Map<String, Any>)
+            .update(driverData)
             .addOnSuccessListener {
                 Toast.makeText(this, "Driver information saved successfully", Toast.LENGTH_SHORT).show()
                 startActivity(Intent(this, DriverDashboardActivity::class.java))
