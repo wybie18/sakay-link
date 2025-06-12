@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "32744788132",
+    "project_id": "sakaylink",
+    "storage_bucket": "sakaylink.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:32744788132:android:efba6cd4ea7fc09a335631",
+        "android_client_info": {
+          "package_name": "com.example.sakaylink"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "32744788132-q47rvg58vrr7g13hjdac696cvapcmqen.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sakaylink",
+            "certificate_hash": "9dfccf929fde597b90932fff6ddca5c7e65a5112"
+          }
+        },
+        {
+          "client_id": "32744788132-d2inctabe24dnqrt52dsvs2k6io4vhri.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_Ohn_iSQQeLhAiwZq1v6c_RsmOJ6VL60"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "32744788132-d2inctabe24dnqrt52dsvs2k6io4vhri.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

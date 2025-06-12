@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">SakayLink</string>
+    <string name="login_title">Welcome Back</string>
+    <string name="register_title">Create Account</string>
+    <string name="email_hint">Email</string>
+    <string name="password_hint">Password</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="name_hint">Full Name</string>
+    <string name="phone_hint">Phone Number</string>
+    <string name="login_button">Login</string>
+    <string name="register_button">Register</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="register_here">Register here</string>
+    <string name="have_account">Already have an account?</string>
+    <string name="login_here">Login here</string>
+    <string name="select_role">Select Role:</string>
+    <string name="passenger">Passenger</string>
+    <string name="driver">Driver</string>
+    <string name="required_field">This field is required</string>
+    <string name="password_length">Password must be at least 6 characters</string>
+    <string name="passwords_not_match">Passwords do not match</string>
+    <string name="select_role_error">Please select a role</string>
+    <string name="login_success">Login successful</string>
+    <string name="login_failed">Login failed</string>
+    <string name="registration_success">Registration successful</string>
+    <string name="registration_failed">Registration failed</string>
+    <string name="password_reset_sent">Password reset email sent</string>
+    <string name="enter_email_first">Please enter your email first</string>
+    <string name="invalid_role">Invalid user role</string>
+    <string name="user_data_not_found">User data not found</string>
+    <string name="error_creating_profile">Error creating user profile</string>
+    <string name="client_id">32744788132-d2inctabe24dnqrt52dsvs2k6io4vhri.apps.googleusercontent.com</string>
+</resources>
