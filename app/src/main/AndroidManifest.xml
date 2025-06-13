@@ -30,6 +30,8 @@
         <activity android:name=".LoginActivity" />
         <activity android:name=".RegisterActivity" />
         <activity android:name=".DriverSetupActivity" />
+        <activity android:name=".PassengerDashboardActivity" />
+        <activity android:name=".DriverDashboardActivity" />
     </application>
 
 </manifest>
