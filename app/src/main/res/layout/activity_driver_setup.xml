@@ -2,6 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/background_color"
     android:fillViewport="true">
 
@@ -44,13 +45,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Vehicle Make (e.g., Toyota)">
+            android:hint="Vehicle Make (e.g., Toyota)"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/primary_color"
+            app:boxStrokeColor="@color/primary_color"
+            app:hintTextColor="@color/primary_color"
+            app:boxBackgroundMode="outline" >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etVehicleMake"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapWords" />
+                android:inputType="textCapWords"
+                android:textColor="@color/text_primary"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -58,13 +65,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Vehicle Model (e.g., Vios)">
+            android:hint="Vehicle Model (e.g., Vios)"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/primary_color"
+            app:boxStrokeColor="@color/primary_color"
+            app:hintTextColor="@color/primary_color"
+            app:boxBackgroundMode="outline" >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etVehicleModel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapWords" />
+                android:inputType="textCapWords"
+                android:textColor="@color/text_primary" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -72,13 +85,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Vehicle Color">
+            android:hint="Vehicle Color"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/primary_color"
+            app:boxStrokeColor="@color/primary_color"
+            app:hintTextColor="@color/primary_color"
+            app:boxBackgroundMode="outline" >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etVehicleColor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapWords" />
+                android:inputType="textCapWords"
+                android:textColor="@color/text_primary" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -86,13 +105,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Plate Number">
+            android:hint="Plate Number"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/primary_color"
+            app:boxStrokeColor="@color/primary_color"
+            app:hintTextColor="@color/primary_color"
+            app:boxBackgroundMode="outline" >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPlateNumber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapCharacters" />
+                android:inputType="textCapCharacters"
+                android:textColor="@color/text_primary" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -100,13 +125,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:hint="Vehicle Year">
+            android:hint="Vehicle Year"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/primary_color"
+            app:boxStrokeColor="@color/primary_color"
+            app:hintTextColor="@color/primary_color"
+            app:boxBackgroundMode="outline">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etVehicleYear"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number" />
+                android:inputType="number"
+                android:textColor="@color/text_primary" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -124,13 +155,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="License Number">
+            android:hint="License Number"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/primary_color"
+            app:boxStrokeColor="@color/primary_color"
+            app:hintTextColor="@color/primary_color"
+            app:boxBackgroundMode="outline" >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etLicenseNumber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapCharacters" />
+                android:inputType="textCapCharacters"
+                android:textColor="@color/text_primary" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -138,14 +175,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="License Expiry Date">
+            android:hint="License Expiry Date"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/primary_color"
+            app:boxStrokeColor="@color/primary_color"
+            app:hintTextColor="@color/primary_color"
+            app:boxBackgroundMode="outline" >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etLicenseExpiry"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:focusable="false"
-                android:inputType="none" />
+                android:inputType="none"
+                android:textColor="@color/text_primary" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
