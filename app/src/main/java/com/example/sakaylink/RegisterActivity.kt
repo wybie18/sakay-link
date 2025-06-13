@@ -35,6 +35,16 @@ class RegisterActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
 
+        etName = findViewById(R.id.etName)
+        etEmail = findViewById(R.id.etEmail)
+        etPhoneNumber = findViewById(R.id.etPhoneNumber)
+        etPassword = findViewById(R.id.etPassword)
+        etConfirmPassword = findViewById(R.id.etConfirmPassword)
+        rgRole = findViewById(R.id.rgRole)
+        btnRegister = findViewById(R.id.btnRegister)
+        tvLogin = findViewById(R.id.tvLogin)
+        progressBar = findViewById(R.id.progressBar)
+
         setupClickListeners()
     }
 
