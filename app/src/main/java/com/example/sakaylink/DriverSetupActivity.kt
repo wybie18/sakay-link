@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.SetOptions
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -225,7 +226,6 @@ class DriverSetupActivity : AppCompatActivity() {
                     showError("Failed to upload driver license: ${e.message}")
                 }
         }
-
         // Upload background check if selected
         backgroundCheckUri?.let { uri ->
             val backgroundRef = storageRef.child("background_check.pdf")
@@ -259,15 +259,15 @@ class DriverSetupActivity : AppCompatActivity() {
             null
         }
 
-        val driverData = mapOf(
-            "vehicleInfo" to mapOf(
+        val driverData = hashMapOf(
+            "vehicleInfo" to hashMapOf(
                 "make" to etVehicleMake.text.toString().trim(),
                 "model" to etVehicleModel.text.toString().trim(),
                 "color" to etVehicleColor.text.toString().trim(),
                 "plateNumber" to etPlateNumber.text.toString().trim(),
                 "year" to etVehicleYear.text.toString().toInt()
             ),
-            "credentials" to mapOf(
+            "credentials" to hashMapOf(
                 "driverLicenseUrl" to (licenseUrl ?: ""),
                 "licenseNumber" to etLicenseNumber.text.toString().trim(),
                 "licenseExpiry" to if (expiryDate != null) Timestamp(expiryDate) else null,
@@ -278,7 +278,7 @@ class DriverSetupActivity : AppCompatActivity() {
         )
 
         db.collection("drivers").document(uid)
-            .update(driverData)
+            .set(driverData, SetOptions.merge())
             .addOnSuccessListener {
                 Toast.makeText(this, "Driver information saved successfully", Toast.LENGTH_SHORT).show()
                 startActivity(Intent(this, DriverDashboardActivity::class.java))
