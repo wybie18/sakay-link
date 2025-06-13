@@ -1,6 +1,6 @@
 [versions]
 agp = "8.10.1"
-androidSdk = "11.8.5"
+androidSdk = "11.10.2"
 appcompat = "1.7.1"
 constraintlayout = "2.2.1"
 firebaseBom = "33.15.0"
