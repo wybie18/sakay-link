@@ -82,7 +82,7 @@ dependencies {
     implementation(libs.play.services.location)
 
     implementation(libs.glide)
-    implementation(libs.android.sdk)
+    implementation(libs.mapbox)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
