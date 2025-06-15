@@ -25,7 +25,7 @@ class DriverDashboardActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_profile -> {
-//                    replaceFragment(ProfileFragment())
+                    replaceFragment(DriverProfileFragment())
                     true
                 }
                 else -> false
