@@ -26,7 +26,7 @@ class PassengerProfileFragment : Fragment() {
 //    private lateinit var profileImage: CircleImageView
 //    private lateinit var editProfileButton: ImageButton
     private lateinit var nameEditText: EditText
-    private lateinit var emailTextView: TextView
+    private lateinit var emailEditText: EditText
     private lateinit var phoneEditText: EditText
     private lateinit var saveButton: Button
     private lateinit var logoutButton: Button
@@ -78,7 +78,7 @@ class PassengerProfileFragment : Fragment() {
 //        profileImage = view.findViewById(R.id.profile_image)
 //        editProfileButton = view.findViewById(R.id.edit_profile_button)
         nameEditText = view.findViewById(R.id.name_edit_text)
-        emailTextView = view.findViewById(R.id.email_text_view)
+        emailEditText = view.findViewById(R.id.email_edit_text)
         phoneEditText = view.findViewById(R.id.phone_edit_text)
         saveButton = view.findViewById(R.id.save_button)
         logoutButton = view.findViewById(R.id.logout_button)
@@ -141,7 +141,7 @@ class PassengerProfileFragment : Fragment() {
                     val profileUrl = document.getString("profileUrl") ?: ""
 
                     nameEditText.setText(name)
-                    emailTextView.text = email
+                    emailEditText.setText(email)
                     phoneEditText.setText(phone)
 
 //                    if (profileUrl.isNotEmpty()) {
