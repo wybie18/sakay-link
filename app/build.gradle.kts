@@ -1,3 +1,13 @@
+import java.util.Properties
+
+val secretPropsFile = rootProject.file("secrets.properties")
+val secretProps = Properties().apply {
+    if (secretPropsFile.exists()) {
+        load(secretPropsFile.inputStream())
+    }
+}
+
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -17,6 +27,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["google_maps_key"] = secretProps.getProperty("GOOGLE_MAPS_API_KEY", "")
     }
 
     buildTypes {
@@ -26,6 +37,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        debug {
+            manifestPlaceholders["google_maps_key"] = secretProps.getProperty("GOOGLE_MAPS_API_KEY", "")
+        }
+        release {
+            manifestPlaceholders["google_maps_key"] = secretProps.getProperty("GOOGLE_MAPS_API_KEY", "")
         }
     }
     compileOptions {
