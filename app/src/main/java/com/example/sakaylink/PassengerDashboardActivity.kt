@@ -29,7 +29,7 @@ class PassengerDashboardActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_profile -> {
-//                    replaceFragment(ProfileFragment())
+                    replaceFragment(PassengerProfileFragment())
                     true
                 }
                 else -> false
