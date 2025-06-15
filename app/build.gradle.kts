@@ -50,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -83,6 +84,7 @@ dependencies {
 
     implementation(libs.glide)
     implementation(libs.mapbox)
+    implementation(libs.maps.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
