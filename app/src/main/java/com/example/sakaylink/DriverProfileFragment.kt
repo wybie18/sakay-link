@@ -8,13 +8,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ProgressBar
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import com.example.sakaylink.app.utils.AuthManager
 
 class DriverProfileFragment : Fragment() {
 
-    private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
     private lateinit var storage: FirebaseStorage
 
@@ -39,7 +38,6 @@ class DriverProfileFragment : Fragment() {
     }
 
     private fun initializeFirebase() {
-        auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
         storage = FirebaseStorage.getInstance()
     }
@@ -56,7 +54,7 @@ class DriverProfileFragment : Fragment() {
     }
 
     private fun logout() {
-        auth.signOut()
+        AuthManager.signOut()
         val intent = Intent(requireContext(), LoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)

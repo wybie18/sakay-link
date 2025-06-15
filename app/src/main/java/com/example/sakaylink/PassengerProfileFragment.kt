@@ -12,13 +12,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.google.android.material.switchmaterial.SwitchMaterial
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import com.example.sakaylink.app.utils.AuthManager
 
 class PassengerProfileFragment : Fragment() {
 
-    private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
     private lateinit var storage: FirebaseStorage
 
@@ -69,7 +68,6 @@ class PassengerProfileFragment : Fragment() {
     }
 
     private fun initializeFirebase() {
-        auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
         storage = FirebaseStorage.getInstance()
     }
@@ -126,7 +124,7 @@ class PassengerProfileFragment : Fragment() {
     }
 
     private fun loadUserProfile() {
-        val currentUser = auth.currentUser ?: return
+        val currentUser = AuthManager.getCurrentUser() ?: return
         progressBar.visibility = View.VISIBLE
 
         firestore.collection("users")
@@ -159,7 +157,7 @@ class PassengerProfileFragment : Fragment() {
     }
 
     private fun loadLocationSettings() {
-        val currentUser = auth.currentUser ?: return
+        val currentUser = AuthManager.getCurrentUser() ?: return
 
         firestore.collection("locations")
             .document("passengers")
@@ -197,7 +195,7 @@ class PassengerProfileFragment : Fragment() {
     }
 
     private fun updateLocationVisibility(isVisible: Boolean) {
-        val currentUser = auth.currentUser ?: return
+        val currentUser = AuthManager.getCurrentUser() ?: return
 
         val locationData = hashMapOf(
             "isVisible" to isVisible,
@@ -224,7 +222,7 @@ class PassengerProfileFragment : Fragment() {
     }
 
     private fun saveProfile() {
-        val currentUser = auth.currentUser ?: return
+        val currentUser = AuthManager.getCurrentUser() ?: return
         val name = nameEditText.text.toString().trim()
         val phone = phoneEditText.text.toString().trim()
 
@@ -285,7 +283,7 @@ class PassengerProfileFragment : Fragment() {
     }
 
     private fun logout() {
-        auth.signOut()
+        AuthManager.signOut()
         val intent = Intent(requireContext(), LoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
