@@ -15,6 +15,9 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.example.sakaylink.app.utils.AuthManager
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.imageview.ShapeableImageView
+import com.google.firebase.firestore.SetOptions
 
 class PassengerProfileFragment : Fragment() {
 
@@ -22,32 +25,33 @@ class PassengerProfileFragment : Fragment() {
     private lateinit var storage: FirebaseStorage
 
     // UI Elements
-//    private lateinit var profileImage: CircleImageView
-//    private lateinit var editProfileButton: ImageButton
-    private lateinit var nameEditText: EditText
-    private lateinit var emailEditText: EditText
-    private lateinit var phoneEditText: EditText
-    private lateinit var saveButton: Button
+    private lateinit var profileImage: ShapeableImageView
+    private lateinit var editProfileButton: FloatingActionButton
     private lateinit var logoutButton: Button
     private lateinit var locationToggle: SwitchMaterial
     private lateinit var locationStatusText: TextView
     private lateinit var progressBar: ProgressBar
+    private lateinit var profileInfoOption: LinearLayout
+    private lateinit var phoneNumberOption: LinearLayout
+    private lateinit var changePasswordOption: LinearLayout
 
     private var selectedImageUri: Uri? = null
-    private var isEditMode = false
 
-//    private val imagePickerLauncher = registerForActivityResult(
-//        ActivityResultContracts.StartActivityForResult()
-//    ) { result ->
-//        if (result.resultCode == Activity.RESULT_OK) {
-//            result.data?.data?.let { uri ->
-//                selectedImageUri = uri
-//                Glide.with(requireContext())
-//                    .load(uri)
-//                    .into(profileImage)
-//            }
-//        }
-//    }
+    private val imagePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (!isAdded) return@registerForActivityResult
+
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                selectedImageUri = uri
+                Glide.with(requireContext())
+                    .load(uri)
+                    .into(profileImage)
+                saveProfile()
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -73,35 +77,34 @@ class PassengerProfileFragment : Fragment() {
     }
 
     private fun initializeViews(view: View) {
-//        profileImage = view.findViewById(R.id.profile_image)
-//        editProfileButton = view.findViewById(R.id.edit_profile_button)
-        nameEditText = view.findViewById(R.id.name_edit_text)
-        emailEditText = view.findViewById(R.id.email_edit_text)
-        phoneEditText = view.findViewById(R.id.phone_edit_text)
-        saveButton = view.findViewById(R.id.save_button)
+        profileImage = view.findViewById(R.id.profile_image)
+        editProfileButton = view.findViewById(R.id.edit_photo)
+        profileInfoOption = view.findViewById(R.id.profile_info_option)
+        phoneNumberOption = view.findViewById(R.id.phone_number_option)
+        changePasswordOption = view.findViewById(R.id.change_password_option)
         logoutButton = view.findViewById(R.id.logout_button)
         locationToggle = view.findViewById(R.id.location_toggle)
         locationStatusText = view.findViewById(R.id.location_status_text)
         progressBar = view.findViewById(R.id.progress_bar)
-
-        // Initially disable editing
-        setEditMode(false)
     }
 
     private fun setupClickListeners() {
-//        editProfileButton.setOnClickListener {
-//            if (!isEditMode) {
-//                setEditMode(true)
-//            } else {
-//                // Open image picker
-//                val intent = Intent(Intent.ACTION_PICK)
-//                intent.type = "image/*"
-//                imagePickerLauncher.launch(intent)
-//            }
-//        }
+        editProfileButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "image/*"
+            imagePickerLauncher.launch(intent)
+        }
 
-        saveButton.setOnClickListener {
-            saveProfile()
+        profileInfoOption.setOnClickListener {
+            startActivity(Intent(requireContext(), PassengerProfileActivity::class.java))
+        }
+
+        phoneNumberOption.setOnClickListener {
+            startActivity(Intent(requireContext(), PassengerUpdatePhoneActivity::class.java))
+        }
+
+        changePasswordOption.setOnClickListener {
+            startActivity(Intent(requireContext(), PassengerUpdatePasswordActivity::class.java))
         }
 
         logoutButton.setOnClickListener {
@@ -113,16 +116,6 @@ class PassengerProfileFragment : Fragment() {
         }
     }
 
-    private fun setEditMode(enabled: Boolean) {
-        isEditMode = enabled
-        nameEditText.isEnabled = enabled
-        phoneEditText.isEnabled = enabled
-        saveButton.visibility = if (enabled) View.VISIBLE else View.GONE
-//        editProfileButton.setImageResource(
-//            if (enabled) R.drawable.ic_camera else R.drawable.ic_edit
-//        )
-    }
-
     private fun loadUserProfile() {
         val currentUser = AuthManager.getCurrentUser() ?: return
         progressBar.visibility = View.VISIBLE
@@ -131,28 +124,24 @@ class PassengerProfileFragment : Fragment() {
             .document(currentUser.uid)
             .get()
             .addOnSuccessListener { document ->
+                if (!isAdded || isDetached) return@addOnSuccessListener
                 progressBar.visibility = View.GONE
                 if (document.exists()) {
-                    val name = document.getString("name") ?: ""
-                    val email = document.getString("email") ?: ""
-                    val phone = document.getString("phoneNumber") ?: ""
                     val profileUrl = document.getString("profileUrl") ?: ""
 
-                    nameEditText.setText(name)
-                    emailEditText.setText(email)
-                    phoneEditText.setText(phone)
-
-//                    if (profileUrl.isNotEmpty()) {
-//                        Glide.with(requireContext())
-//                            .load(profileUrl)
-//                            .placeholder(R.drawable.ic_person)
-//                            .into(profileImage)
-//                    }
+                    if (profileUrl.isNotEmpty()) {
+                        Glide.with(requireContext())
+                            .load(profileUrl)
+                            .placeholder(R.drawable.ic_person)
+                            .into(profileImage)
+                    }
                 }
             }
             .addOnFailureListener {
-                progressBar.visibility = View.GONE
-                Toast.makeText(context, "Failed to load profile", Toast.LENGTH_SHORT).show()
+                if (isAdded) {
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), "Failed to load profile", Toast.LENGTH_SHORT).show()
+                }
             }
     }
 
@@ -165,6 +154,7 @@ class PassengerProfileFragment : Fragment() {
             .document(currentUser.uid)
             .get()
             .addOnSuccessListener { document ->
+                if (!isAdded || isDetached) return@addOnSuccessListener
                 if (document.exists()) {
                     val isVisible = document.getBoolean("isVisible") ?: false
                     locationToggle.isChecked = isVisible
@@ -175,12 +165,15 @@ class PassengerProfileFragment : Fragment() {
                 }
             }
             .addOnFailureListener {
-                locationToggle.isChecked = false
-                updateLocationStatusText(false)
+                if (isAdded) {
+                    locationToggle.isChecked = false
+                    updateLocationStatusText(false)
+                }
             }
     }
 
     private fun updateLocationStatusText(isVisible: Boolean) {
+        if (!isAdded || context == null) return
         locationStatusText.text = if (isVisible) {
             "Your location is visible to drivers"
         } else {
@@ -206,48 +199,34 @@ class PassengerProfileFragment : Fragment() {
             .document("passengers")
             .collection("passengers")
             .document(currentUser.uid)
-            .update(locationData as Map<String, Any>)
+            .set(locationData, SetOptions.merge())
             .addOnSuccessListener {
+                if (!isAdded) return@addOnSuccessListener
                 updateLocationStatusText(isVisible)
-                Toast.makeText(
-                    context,
-                    if (isVisible) "Location is now visible" else "Location is now hidden",
-                    Toast.LENGTH_SHORT
-                ).show()
             }
             .addOnFailureListener {
-                locationToggle.isChecked = !isVisible
-                Toast.makeText(context, "Failed to update location setting", Toast.LENGTH_SHORT).show()
+                if (isAdded) {
+                    locationToggle.isChecked = !isVisible
+                    Toast.makeText(context, "Failed to update location setting", Toast.LENGTH_SHORT)
+                        .show()
+                }
             }
     }
 
     private fun saveProfile() {
         val currentUser = AuthManager.getCurrentUser() ?: return
-        val name = nameEditText.text.toString().trim()
-        val phone = phoneEditText.text.toString().trim()
-
-        if (name.isEmpty()) {
-            nameEditText.error = "Name is required"
-            return
-        }
-
         progressBar.visibility = View.VISIBLE
-
-        if (selectedImageUri != null) {
-            uploadImageAndSaveProfile(currentUser.uid, name, phone)
-        } else {
-            saveProfileToFirestore(currentUser.uid, name, phone, null)
-        }
+        uploadImage(currentUser.uid)
     }
 
-    private fun uploadImageAndSaveProfile(uid: String, name: String, phone: String) {
+    private fun uploadImage(uid: String) {
         val imageRef = storage.reference.child("profile_images/$uid.jpg")
 
         selectedImageUri?.let { uri ->
             imageRef.putFile(uri)
                 .addOnSuccessListener {
                     imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
-                        saveProfileToFirestore(uid, name, phone, downloadUrl.toString())
+                        saveProfileToFirestore(uid, downloadUrl.toString())
                     }
                 }
                 .addOnFailureListener {
@@ -257,28 +236,22 @@ class PassengerProfileFragment : Fragment() {
         }
     }
 
-    private fun saveProfileToFirestore(uid: String, name: String, phone: String, profileUrl: String?) {
-        val updates = hashMapOf<String, Any>(
-            "name" to name,
-            "phoneNumber" to phone
-        )
+    private fun saveProfileToFirestore(uid: String, profileUrl: String) {
+        val updates = hashMapOf<String, Any>()
 
-        if (profileUrl != null) {
-            updates["profileUrl"] = profileUrl
-        }
+        updates["profileUrl"] = profileUrl
 
         firestore.collection("users")
             .document(uid)
             .update(updates)
             .addOnSuccessListener {
                 progressBar.visibility = View.GONE
-                setEditMode(false)
                 selectedImageUri = null
-                Toast.makeText(context, "Profile updated successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Profile picture updated successfully", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener {
                 progressBar.visibility = View.GONE
-                Toast.makeText(context, "Failed to update profile", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Failed to update profile picture", Toast.LENGTH_SHORT).show()
             }
     }
 
