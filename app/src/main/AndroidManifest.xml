@@ -39,6 +39,10 @@
         <activity android:name=".DriverSetupActivity" />
         <activity android:name=".PassengerDashboardActivity" />
         <activity android:name=".DriverDashboardActivity" />
+
+        <activity android:name=".PassengerProfileActivity" android:parentActivityName=".PassengerDashboardActivity" />
+        <activity android:name=".PassengerUpdatePhoneActivity" android:parentActivityName=".PassengerDashboardActivity" />
+        <activity android:name=".PassengerUpdatePasswordActivity" android:parentActivityName=".PassengerDashboardActivity" />
     </application>
 
 </manifest>
