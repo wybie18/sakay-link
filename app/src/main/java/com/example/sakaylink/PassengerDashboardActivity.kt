@@ -155,9 +155,4 @@ class PassengerDashboardActivity : AppCompatActivity() {
             .replace(R.id.fragment_container, fragment)
             .commit()
     }
-
-    override fun onResume() {
-        super.onResume()
-        replaceFragment(PassengerMapFragment())
-    }
 }
