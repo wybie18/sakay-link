@@ -25,6 +25,7 @@ class PassengerProfileFragment : Fragment() {
     private lateinit var storage: FirebaseStorage
 
     // UI Elements
+    private lateinit var nameTextView: TextView
     private lateinit var profileImage: ShapeableImageView
     private lateinit var editProfileButton: FloatingActionButton
     private lateinit var logoutButton: Button
@@ -77,6 +78,7 @@ class PassengerProfileFragment : Fragment() {
     }
 
     private fun initializeViews(view: View) {
+        nameTextView = view.findViewById(R.id.name_text_view)
         profileImage = view.findViewById(R.id.profile_image)
         editProfileButton = view.findViewById(R.id.edit_photo)
         profileInfoOption = view.findViewById(R.id.profile_info_option)
@@ -127,7 +129,12 @@ class PassengerProfileFragment : Fragment() {
                 if (!isAdded || isDetached) return@addOnSuccessListener
                 progressBar.visibility = View.GONE
                 if (document.exists()) {
+                    val name = document.getString("name") ?: ""
                     val profileUrl = document.getString("profileUrl") ?: ""
+
+                    if (name.isNotEmpty()) {
+                        nameTextView.text = name
+                    }
 
                     if (profileUrl.isNotEmpty()) {
                         Glide.with(requireContext())
