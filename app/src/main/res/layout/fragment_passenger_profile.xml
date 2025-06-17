@@ -54,27 +54,28 @@
                         android:id="@+id/edit_photo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/photo_camera_24px"
-                        app:fabSize="mini"
-                        app:backgroundTint="@color/primary_color"
-                        app:tint="@android:color/white"
-                        app:elevation="6dp"
-                        app:borderWidth="2dp"
-                        app:layout_constraintEnd_toEndOf="@id/profile_image"
-                        app:layout_constraintBottom_toBottomOf="@id/profile_image"
-                        android:layout_marginEnd="4dp"
                         android:layout_marginBottom="4dp"
-                        android:contentDescription="Open Camera"/>
+                        android:contentDescription="Open Camera"
+                        android:src="@drawable/photo_camera_24px"
+                        app:backgroundTint="@color/primary_color"
+                        app:borderWidth="2dp"
+                        app:elevation="6dp"
+                        app:fabSize="mini"
+                        app:layout_constraintBottom_toBottomOf="@id/profile_image"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:tint="@android:color/white" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <!-- Upload Instructions -->
+                <!-- User Name -->
                 <TextView
+                    android:id="@+id/name_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tap to change profile picture"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
+                    android:text=""
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
                     android:gravity="center" />
 
             </LinearLayout>
@@ -96,6 +97,30 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="12dp"
+                        android:src="@drawable/person_outline_24px"
+                        app:tint="@color/primary_color" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="User Information"
+                        android:textColor="@color/text_primary"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/profile_info_option"
