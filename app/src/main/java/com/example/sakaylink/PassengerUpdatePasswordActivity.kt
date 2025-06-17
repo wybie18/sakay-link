@@ -39,7 +39,7 @@ class PassengerUpdatePasswordActivity : AppCompatActivity() {
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
             setDisplayShowHomeEnabled(true)
-            title = "Phone Number"
+            title = "Change Password"
         }
 
         firestore = FirebaseFirestore.getInstance()
