@@ -170,8 +170,8 @@ class DriverProfileFragment : Fragment() {
         val currentUser = AuthManager.getCurrentUser() ?: return
 
         firestore.collection("locations")
-            .document("passengers")
-            .collection("passengers")
+            .document("drivers")
+            .collection("drivers")
             .document(currentUser.uid)
             .get()
             .addOnSuccessListener { document ->
