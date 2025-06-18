@@ -89,6 +89,9 @@ dependencies {
 
     implementation(libs.glide)
 
+    implementation(libs.android)
+    implementation(libs.maps.compose)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
