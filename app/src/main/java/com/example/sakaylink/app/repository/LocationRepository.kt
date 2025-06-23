@@ -81,7 +81,7 @@ class LocationRepository {
     /**
      * Get user role from Firestore
      */
-    suspend fun getUserRole(uid: String? = null): Result<String> {
+    private suspend fun getUserRole(uid: String? = null): Result<String> {
         return try {
             val userId = uid ?: auth.currentUser?.uid
             ?: return Result.failure(Exception("User not authenticated"))
@@ -283,6 +283,115 @@ class LocationRepository {
             Result.success(Unit)
         } catch (e: Exception) {
             Log.e(TAG, "Error deleting user location", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Set user as offline (useful when app is closed)
+     */
+    suspend fun setUserOffline(): Result<Unit> {
+        return try {
+            val currentUser = auth.currentUser
+                ?: return Result.failure(Exception("User not authenticated"))
+
+            val uid = currentUser.uid
+            val userRole = getUserRole().getOrNull()
+                ?: return Result.failure(Exception("User role not found"))
+
+            val subcollection = if (userRole == "driver") DRIVERS_SUBCOLLECTION else PASSENGERS_SUBCOLLECTION
+
+            val updateData = if (userRole == "driver") {
+                mapOf("isAvailable" to false)
+            } else {
+                mapOf("isVisible" to false)
+            }
+
+            firestore.collection(LOCATIONS_COLLECTION)
+                .document(subcollection)
+                .collection(subcollection)
+                .document(uid)
+                .update(updateData)
+                .await()
+
+            Log.d(TAG, "User set as offline")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting user offline", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Get driver information by UID
+     */
+    suspend fun getDriverInfo(driverUid: String): Result<DriverInfo?> {
+        return try {
+            // Get basic user info from users collection
+            val userDocument = firestore.collection(USERS_COLLECTION)
+                .document(driverUid)
+                .get()
+                .await()
+
+            if (!userDocument.exists()) {
+                return Result.success(null)
+            }
+
+            // Get driver-specific info from drivers collection
+            val driverDocument = firestore.collection("drivers")
+                .document(driverUid)
+                .get()
+                .await()
+
+            val name = userDocument.getString("name") ?: ""
+            val email = userDocument.getString("email") ?: ""
+            val phoneNumber = userDocument.getString("phoneNumber") ?: ""
+            val profileUrl = userDocument.getString("profileUrl")
+
+            val vehicleInfo = if (driverDocument.exists()) {
+                val vehicleData = driverDocument.get("vehicleInfo") as? Map<String, Any>
+                vehicleData?.let {
+                    VehicleInfo(
+                        make = it["make"] as? String ?: "",
+                        model = it["model"] as? String ?: "",
+                        color = it["color"] as? String ?: "",
+                        plateNumber = it["plateNumber"] as? String ?: "",
+                        year = it["year"] as? Long ?: 0L
+                    )
+                }
+            } else null
+
+            val credentials = if (driverDocument.exists()) {
+                val credentialsData = driverDocument.get("credentials") as? Map<String, Any>
+                credentialsData?.let {
+                    DriverCredentials(
+                        driverLicenseUrl = it["driverLicenseUrl"] as? String ?: "",
+                        licenseNumber = it["licenseNumber"] as? String ?: "",
+                        licenseExpiry = it["licenseExpiry"] as? com.google.firebase.Timestamp,
+                        backgroundCheckUrl = it["backgroundCheckUrl"] as? String ?: ""
+                    )
+                }
+            } else null
+
+            val isVerified = driverDocument.getBoolean("isVerified") ?: false
+            val verifiedAt = driverDocument.getTimestamp("verifiedAt")
+
+            val driverInfo = DriverInfo(
+                uid = driverUid,
+                name = name,
+                email = email,
+                phoneNumber = phoneNumber,
+                profileUrl = profileUrl,
+                vehicleInfo = vehicleInfo,
+                credentials = credentials,
+                isVerified = isVerified,
+                verifiedAt = verifiedAt
+            )
+
+            Result.success(driverInfo)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting driver info", e)
             Result.failure(e)
         }
     }
