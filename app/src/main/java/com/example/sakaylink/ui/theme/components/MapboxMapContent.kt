@@ -1,6 +1,7 @@
 package com.example.sakaylink.ui.theme.components
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.widget.Toast
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -30,6 +32,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.DrawableCompat
 import com.example.sakaylink.R
+import com.example.sakaylink.app.repository.DriverInfo
 import com.example.sakaylink.app.repository.LocationRepository
 import com.example.sakaylink.app.utils.LocationManager
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -47,6 +50,8 @@ import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
 import com.mapbox.maps.plugin.locationcomponent.location
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -68,6 +73,12 @@ fun MapboxMapContent(
 
     var availableDrivers by remember { mutableStateOf<List<com.example.sakaylink.app.repository.UserLocation>>(emptyList()) }
     var visiblePassengers by remember { mutableStateOf<List<com.example.sakaylink.app.repository.UserLocation>>(emptyList()) }
+    var isLocationUpdating by remember { mutableStateOf(false) }
+
+    // Dialog states
+    var showDriverDialog by remember { mutableStateOf(false) }
+    var selectedDriverInfo by remember { mutableStateOf<DriverInfo?>(null) }
+    var isLoadingDriverInfo by remember { mutableStateOf(false) }
 
     val mapViewportState = rememberMapViewportState {
         setCameraOptions {
@@ -91,26 +102,56 @@ fun MapboxMapContent(
     }
 
     LaunchedEffect(locationPermissions.allPermissionsGranted) {
-        if (locationPermissions.allPermissionsGranted) {
-            try {
-                val location = locationManager.getLocation()
-                if (location != null) {
+        if (locationPermissions.allPermissionsGranted && !isLocationUpdating) {
+            isLocationUpdating = true
+            locationManager.getLocationUpdates().collectLatest { location ->
+                try {
                     locationRepository.saveUserLocation(
                         latitude = location.latitude,
                         longitude = location.longitude,
                         userRole = role
                     ).fold(
                         onSuccess = {
-                            Toast.makeText(context, "Location saved successfully!", Toast.LENGTH_SHORT).show()
+//                            Toast.makeText(context, "Location saved successfully!", Toast.LENGTH_SHORT).show()
                         },
                         onFailure = { error ->
                             Toast.makeText(context, "Failed to save location: ${error.message}", Toast.LENGTH_SHORT).show()
                         }
                     )
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Error getting location: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
-            } catch (e: Exception) {
-                Toast.makeText(context, "Error getting location: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    // Function to handle driver marker click
+    val handleDriverClick = { driverUid: String ->
+        coroutineScope.launch {
+            isLoadingDriverInfo = true
+            locationRepository.getDriverInfo(driverUid).fold(
+                onSuccess = { driverInfo ->
+                    selectedDriverInfo = driverInfo
+                    showDriverDialog = true
+                    isLoadingDriverInfo = false
+                },
+                onFailure = { error ->
+                    Toast.makeText(context, "Failed to load driver info: ${error.message}", Toast.LENGTH_SHORT).show()
+                    isLoadingDriverInfo = false
+                }
+            )
+        }
+    }
+
+    // Function to handle phone call
+    val handleCallDriver = { phoneNumber: String ->
+        try {
+            val intent = Intent(Intent.ACTION_DIAL).apply {
+                data = "tel:$phoneNumber".toUri()
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, "Unable to make call", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -145,6 +186,7 @@ fun MapboxMapContent(
 
                 mapView.mapboxMap.setBounds(cameraBoundsOptions)
             }
+
             MapEffect(key1 = availableDrivers, key2 = visiblePassengers, key3 = role) { mapView ->
                 val annotationApi = mapView.annotations
                 val pointAnnotationManager = annotationApi.createPointAnnotationManager()
@@ -153,64 +195,62 @@ fun MapboxMapContent(
 
                 val context = mapView.context
 
-                role.let { role ->
-                    if (role == "driver") {
-                        visiblePassengers.forEach { passenger ->
-                            val passengerIcon =
-                                bitmapFromDrawableRes(context, R.drawable.pin_drop_24px, ContextCompat.getColor(context, R.color.success_color))
-                            passengerIcon?.let { icon ->
-                                val annotation = PointAnnotationOptions()
-                                    .withPoint(
-                                        Point.fromLngLat(
-                                            passenger.geo.longitude,
-                                            passenger.geo.latitude
-                                        )
+                if (role == "driver") {
+                    visiblePassengers.forEach { passenger ->
+                        val passengerIcon = bitmapFromDrawableRes(
+                            context,
+                            R.drawable.pin_drop_24px,
+                            ContextCompat.getColor(context, R.color.success_color)
+                        )
+                        passengerIcon?.let { icon ->
+                            val annotation = PointAnnotationOptions()
+                                .withPoint(
+                                    Point.fromLngLat(
+                                        passenger.geo.longitude,
+                                        passenger.geo.latitude
                                     )
-                                    .withIconImage(icon)
+                                )
+                                .withIconImage(icon)
 
-                                val marker = pointAnnotationManager.create(annotation)
+                            val marker = pointAnnotationManager.create(annotation)
 
-                                // Add click listener
-                                pointAnnotationManager.addClickListener { clickedMarker ->
-                                    if (clickedMarker.id == marker.id) {
-                                        Toast.makeText(
-                                            context,
-                                            "Passenger location",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                    true
+                            pointAnnotationManager.addClickListener { clickedMarker ->
+                                if (clickedMarker.id == marker.id) {
+                                    Toast.makeText(
+                                        context,
+                                        "Passenger requesting ride",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
+                                true
                             }
                         }
-                    } else {
-                        // Show driver locations to passengers
-                        availableDrivers.forEach { driver ->
-                            val driverIcon =
-                                bitmapFromDrawableRes(context, R.drawable.pin_drop_24px, ContextCompat.getColor(context, R.color.error_color))
-                            driverIcon?.let { icon ->
-                                val annotation = PointAnnotationOptions()
-                                    .withPoint(
-                                        Point.fromLngLat(
-                                            driver.geo.longitude,
-                                            driver.geo.latitude
-                                        )
+                    }
+                } else {
+                    // Show driver locations to passengers
+                    availableDrivers.forEach { driver ->
+                        val driverIcon = bitmapFromDrawableRes(
+                            context,
+                            R.drawable.pin_drop_24px,
+                            ContextCompat.getColor(context, R.color.error_color)
+                        )
+                        driverIcon?.let { icon ->
+                            val annotation = PointAnnotationOptions()
+                                .withPoint(
+                                    Point.fromLngLat(
+                                        driver.geo.longitude,
+                                        driver.geo.latitude
                                     )
-                                    .withIconImage(icon)
+                                )
+                                .withIconImage(icon)
 
-                                val marker = pointAnnotationManager.create(annotation)
+                            val marker = pointAnnotationManager.create(annotation)
 
-                                // Add click listener
-                                pointAnnotationManager.addClickListener { clickedMarker ->
-                                    if (clickedMarker.id == marker.id) {
-                                        Toast.makeText(
-                                            context,
-                                            "Available driver",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                    true
+                            pointAnnotationManager.addClickListener { clickedMarker ->
+                                if (clickedMarker.id == marker.id) {
+                                    handleDriverClick(driver.uid)
                                 }
+                                true
                             }
                         }
                     }
@@ -233,6 +273,36 @@ fun MapboxMapContent(
                 tint = Color.Black
             )
         }
+
+        // Loading indicator
+        if (isLoadingDriverInfo) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = Color.White
+                )
+            }
+        }
+    }
+
+    // Driver Info Dialog
+    if (showDriverDialog) {
+        DriverInfoDialog(
+            driverInfo = selectedDriverInfo,
+            onDismiss = {
+                showDriverDialog = false
+                selectedDriverInfo = null
+            },
+            onCallDriver = { phoneNumber ->
+                handleCallDriver(phoneNumber)
+                showDriverDialog = false
+                selectedDriverInfo = null
+            }
+        )
     }
 }
 
