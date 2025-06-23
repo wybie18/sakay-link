@@ -20,10 +20,10 @@ class DriverDashboardActivity : AppCompatActivity() {
                     replaceFragment(DriverMapFragment())
                     true
                 }
-                R.id.nav_passengers -> {
-//                    replaceFragment(PassengersListFragment())
-                    true
-                }
+//                R.id.nav_passengers -> {
+////                    replaceFragment(PassengersListFragment())
+//                    true
+//                }
                 R.id.nav_profile -> {
                     replaceFragment(DriverProfileFragment())
                     true

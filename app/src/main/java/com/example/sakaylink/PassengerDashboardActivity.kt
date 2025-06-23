@@ -59,14 +59,14 @@ class PassengerDashboardActivity : AppCompatActivity() {
                     replaceFragment(PassengerMapFragment())
                     true
                 }
-                R.id.nav_drivers -> {
-                    // replaceFragment(DriversListFragment())
-                    true
-                }
-                R.id.nav_rides -> {
-                    // replaceFragment(RideHistoryFragment())
-                    true
-                }
+//                R.id.nav_drivers -> {
+//                    // replaceFragment(DriversListFragment())
+//                    true
+//                }
+//                R.id.nav_rides -> {
+//                    // replaceFragment(RideHistoryFragment())
+//                    true
+//                }
                 R.id.nav_profile -> {
                     replaceFragment(PassengerProfileFragment())
                     true
