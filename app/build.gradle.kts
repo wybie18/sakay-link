@@ -88,6 +88,7 @@ dependencies {
     implementation(libs.accompanist.permissions)
 
     implementation(libs.glide)
+    implementation(libs.coil.compose)
 
     implementation(libs.android)
     implementation(libs.maps.compose)

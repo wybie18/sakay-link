@@ -3,6 +3,7 @@ accompanistPermissions = "0.36.0"
 agp = "8.10.1"
 android = "11.12.4"
 appcompat = "1.7.1"
+coilCompose = "2.4.0"
 constraintlayout = "2.2.1"
 firebaseBom = "33.15.0"
 fragmentKtx = "1.8.8"
@@ -33,6 +34,7 @@ androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "a
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragmentKtx" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
