@@ -45,14 +45,14 @@ class PassengerMapFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
-            locationRepository.updateDriverAvailability(true)
+            locationRepository.updatePassengerVisibility(true)
         }
     }
 
     override fun onPause() {
         super.onPause()
         lifecycleScope.launch {
-            locationRepository.updateDriverAvailability(false)
+            locationRepository.updatePassengerVisibility(false)
         }
     }
 
