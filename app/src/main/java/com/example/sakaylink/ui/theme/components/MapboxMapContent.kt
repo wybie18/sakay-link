@@ -145,7 +145,7 @@ fun MapboxMapContent(
 
                 mapView.mapboxMap.setBounds(cameraBoundsOptions)
             }
-            MapEffect(visiblePassengers) { mapView ->
+            MapEffect(key1 = availableDrivers, key2 = visiblePassengers, key3 = role) { mapView ->
                 val annotationApi = mapView.annotations
                 val pointAnnotationManager = annotationApi.createPointAnnotationManager()
 
@@ -153,20 +153,65 @@ fun MapboxMapContent(
 
                 val context = mapView.context
 
-                visiblePassengers.forEach { passenger ->
-                    val passengerIcon = bitmapFromDrawableRes(context, R.drawable.pin_drop_24px, ContextCompat.getColor(context, R.color.success_color))
-                    passengerIcon?.let { icon ->
-                        val annotation = PointAnnotationOptions()
-                            .withPoint(Point.fromLngLat(passenger.geo.longitude, passenger.geo.latitude))
-                            .withIconImage(icon)
+                role.let { role ->
+                    if (role == "driver") {
+                        visiblePassengers.forEach { passenger ->
+                            val passengerIcon =
+                                bitmapFromDrawableRes(context, R.drawable.pin_drop_24px, ContextCompat.getColor(context, R.color.success_color))
+                            passengerIcon?.let { icon ->
+                                val annotation = PointAnnotationOptions()
+                                    .withPoint(
+                                        Point.fromLngLat(
+                                            passenger.geo.longitude,
+                                            passenger.geo.latitude
+                                        )
+                                    )
+                                    .withIconImage(icon)
 
-                        val marker = pointAnnotationManager.create(annotation)
+                                val marker = pointAnnotationManager.create(annotation)
 
-                        pointAnnotationManager.addClickListener { clickedMarker ->
-                            if (clickedMarker.id == marker.id) {
-                                Toast.makeText(context, "Passenger location", Toast.LENGTH_SHORT).show()
+                                // Add click listener
+                                pointAnnotationManager.addClickListener { clickedMarker ->
+                                    if (clickedMarker.id == marker.id) {
+                                        Toast.makeText(
+                                            context,
+                                            "Passenger location",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                    true
+                                }
                             }
-                            true
+                        }
+                    } else {
+                        // Show driver locations to passengers
+                        availableDrivers.forEach { driver ->
+                            val driverIcon =
+                                bitmapFromDrawableRes(context, R.drawable.pin_drop_24px, ContextCompat.getColor(context, R.color.error_color))
+                            driverIcon?.let { icon ->
+                                val annotation = PointAnnotationOptions()
+                                    .withPoint(
+                                        Point.fromLngLat(
+                                            driver.geo.longitude,
+                                            driver.geo.latitude
+                                        )
+                                    )
+                                    .withIconImage(icon)
+
+                                val marker = pointAnnotationManager.create(annotation)
+
+                                // Add click listener
+                                pointAnnotationManager.addClickListener { clickedMarker ->
+                                    if (clickedMarker.id == marker.id) {
+                                        Toast.makeText(
+                                            context,
+                                            "Available driver",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                    true
+                                }
+                            }
                         }
                     }
                 }
