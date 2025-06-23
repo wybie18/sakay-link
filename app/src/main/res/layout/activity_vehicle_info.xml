@@ -86,13 +86,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="20dp"
                         android:hint="Vehicle Make"
-                        app:boxBackgroundMode="outline"
-                        app:boxCornerRadiusBottomEnd="4dp"
-                        app:boxCornerRadiusBottomStart="4dp"
-                        app:boxCornerRadiusTopEnd="4dp"
-                        app:boxCornerRadiusTopStart="4dp"
                         app:boxStrokeColor="@color/primary_color"
-                        app:boxStrokeWidth="2dp"
                         app:hintTextColor="@color/primary_color"
                         app:helperText="Enter vehicle manufacturer (e.g., Toyota, Honda)"
                         app:helperTextTextColor="@color/text_secondary">
@@ -103,9 +97,7 @@
                             android:layout_height="wrap_content"
                             android:inputType="textCapWords"
                             android:textColor="@color/text_primary"
-                            android:textSize="16sp"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp" />
+                            android:textSize="16sp" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -116,13 +108,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="20dp"
                         android:hint="Vehicle Model"
-                        app:boxBackgroundMode="outline"
-                        app:boxCornerRadiusBottomEnd="4dp"
-                        app:boxCornerRadiusBottomStart="4dp"
-                        app:boxCornerRadiusTopEnd="4dp"
-                        app:boxCornerRadiusTopStart="4dp"
                         app:boxStrokeColor="@color/primary_color"
-                        app:boxStrokeWidth="2dp"
                         app:hintTextColor="@color/primary_color"
                         app:helperText="Enter vehicle model (e.g., Camry, Civic)"
                         app:helperTextTextColor="@color/text_secondary">
@@ -133,9 +119,7 @@
                             android:layout_height="wrap_content"
                             android:inputType="textCapWords"
                             android:textColor="@color/text_primary"
-                            android:textSize="16sp"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp" />
+                            android:textSize="16sp" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -146,13 +130,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="32dp"
                         android:hint="Year"
-                        app:boxBackgroundMode="outline"
-                        app:boxCornerRadiusBottomEnd="4dp"
-                        app:boxCornerRadiusBottomStart="4dp"
-                        app:boxCornerRadiusTopEnd="4dp"
-                        app:boxCornerRadiusTopStart="4dp"
                         app:boxStrokeColor="@color/primary_color"
-                        app:boxStrokeWidth="2dp"
                         app:hintTextColor="@color/primary_color"
                         app:helperText="Enter vehicle year (1900-2030)"
                         app:helperTextTextColor="@color/text_secondary">
@@ -163,9 +141,7 @@
                             android:layout_height="wrap_content"
                             android:inputType="number"
                             android:textColor="@color/text_primary"
-                            android:textSize="16sp"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp" />
+                            android:textSize="16sp" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -222,13 +198,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="20dp"
                         android:hint="Vehicle Color"
-                        app:boxBackgroundMode="outline"
-                        app:boxCornerRadiusBottomEnd="4dp"
-                        app:boxCornerRadiusBottomStart="4dp"
-                        app:boxCornerRadiusTopEnd="4dp"
-                        app:boxCornerRadiusTopStart="4dp"
                         app:boxStrokeColor="@color/primary_color"
-                        app:boxStrokeWidth="2dp"
                         app:hintTextColor="@color/primary_color"
                         app:helperText="Enter vehicle color (e.g., White, Black, Red)"
                         app:helperTextTextColor="@color/text_secondary">
@@ -239,9 +209,7 @@
                             android:layout_height="wrap_content"
                             android:inputType="textCapWords"
                             android:textColor="@color/text_primary"
-                            android:textSize="16sp"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp" />
+                            android:textSize="16sp" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -252,13 +220,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="32dp"
                         android:hint="Plate Number"
-                        app:boxBackgroundMode="outline"
-                        app:boxCornerRadiusBottomEnd="4dp"
-                        app:boxCornerRadiusBottomStart="4dp"
-                        app:boxCornerRadiusTopEnd="4dp"
-                        app:boxCornerRadiusTopStart="4dp"
                         app:boxStrokeColor="@color/primary_color"
-                        app:boxStrokeWidth="2dp"
                         app:hintTextColor="@color/primary_color"
                         app:helperText="Enter vehicle plate number"
                         app:helperTextTextColor="@color/text_secondary">
@@ -269,9 +231,7 @@
                             android:layout_height="wrap_content"
                             android:inputType="textCapCharacters|textNoSuggestions"
                             android:textColor="@color/text_primary"
-                            android:textSize="16sp"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp" />
+                            android:textSize="16sp" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 

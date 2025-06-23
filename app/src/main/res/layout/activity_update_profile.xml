@@ -86,13 +86,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="20dp"
                         android:hint="Full Name"
-                        app:boxBackgroundMode="outline"
-                        app:boxCornerRadiusBottomEnd="4dp"
-                        app:boxCornerRadiusBottomStart="4dp"
-                        app:boxCornerRadiusTopEnd="4dp"
-                        app:boxCornerRadiusTopStart="4dp"
                         app:boxStrokeColor="@color/primary_color"
-                        app:boxStrokeWidth="2dp"
                         app:hintTextColor="@color/primary_color"
                         app:helperTextTextColor="@color/text_secondary">
 
@@ -102,9 +96,7 @@
                             android:layout_height="wrap_content"
                             android:inputType="textPersonName|textCapWords"
                             android:textColor="@color/text_primary"
-                            android:textSize="16sp"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp" />
+                            android:textSize="16sp" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -115,13 +107,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="32dp"
                         android:hint="Email Address"
-                        app:boxBackgroundMode="outline"
-                        app:boxCornerRadiusBottomEnd="4dp"
-                        app:boxCornerRadiusBottomStart="4dp"
-                        app:boxCornerRadiusTopEnd="4dp"
-                        app:boxCornerRadiusTopStart="4dp"
                         app:boxStrokeColor="@color/divider_color"
-                        app:boxStrokeWidth="1dp"
                         app:hintTextColor="@color/text_secondary"
                         app:helperText="Email cannot be changed"
                         app:helperTextTextColor="@color/text_secondary">
@@ -137,9 +123,7 @@
                             android:inputType="textEmailAddress"
                             android:text="user@example.com"
                             android:textColor="@color/text_secondary"
-                            android:textSize="16sp"
-                            android:paddingStart="12dp"
-                            android:paddingEnd="12dp" />
+                            android:textSize="16sp" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 

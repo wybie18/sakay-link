@@ -38,8 +38,6 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Email"
-            android:textColorHint="@color/primary_color"
-            android:textColor="@color/text_primary"
             app:boxStrokeColor="@color/primary_color"
             app:hintTextColor="@color/primary_color"
             app:boxBackgroundMode="outline"
@@ -50,7 +48,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_primary"
-                android:textColorHint="@color/primary_color"
                 android:inputType="textEmailAddress" />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -60,8 +57,6 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:hint="Password"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/primary_color"
             app:boxStrokeColor="@color/primary_color"
             app:hintTextColor="@color/primary_color"
             app:endIconMode="password_toggle"
@@ -73,7 +68,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/text_primary"
-                android:textColorHint="@color/primary_color"
                 android:inputType="textPassword" />
 
         </com.google.android.material.textfield.TextInputLayout>
