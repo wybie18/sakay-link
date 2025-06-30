@@ -11,6 +11,7 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.example.sakaylink.app.CloudinaryConfig
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -227,19 +228,22 @@ class PassengerProfileFragment : Fragment() {
     }
 
     private fun uploadImage(uid: String) {
-        val imageRef = storage.reference.child("profile_images/$uid.jpg")
-
         selectedImageUri?.let { uri ->
-            imageRef.putFile(uri)
-                .addOnSuccessListener {
-                    imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
-                        saveProfileToFirestore(uid, downloadUrl.toString())
-                    }
-                }
-                .addOnFailureListener {
+            CloudinaryConfig.uploadImageUnsigned(
+                context = requireContext(),
+                imageUri = uri,
+                onSuccess = { url ->
+                    saveProfileToFirestore(uid, url)
+                },
+                onError = {
                     progressBar.visibility = View.GONE
                     Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+                },
+                onProgress = { progress ->
+                    // Update progress if needed
+                    // You can show upload progress here
                 }
+            )
         }
     }
 

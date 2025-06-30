@@ -15,6 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import com.bumptech.glide.Glide
+import com.example.sakaylink.app.CloudinaryConfig
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.example.sakaylink.app.utils.AuthManager
@@ -177,9 +178,9 @@ class DriverProfileFragment : Fragment() {
             .addOnSuccessListener { document ->
                 if (!isAdded || isDetached) return@addOnSuccessListener
                 if (document.exists()) {
-                    val isVisible = document.getBoolean("isVisible") ?: false
-                    locationToggle.isChecked = isVisible
-                    updateLocationStatusText(isVisible)
+                    val isAvailable = document.getBoolean("isAvailable") ?: false
+                    locationToggle.isChecked = isAvailable
+                    updateLocationStatusText(isAvailable)
                 } else {
                     locationToggle.isChecked = false
                     updateLocationStatusText(false)
@@ -193,26 +194,26 @@ class DriverProfileFragment : Fragment() {
             }
     }
 
-    private fun updateLocationStatusText(isVisible: Boolean) {
+    private fun updateLocationStatusText(isAvailable: Boolean) {
         if (!isAdded || context == null) return
-        locationStatusText.text = if (isVisible) {
+        locationStatusText.text = if (isAvailable) {
             "Your location is visible"
         } else {
             "Your location is hidden"
         }
         locationStatusText.setTextColor(
-            if (isVisible)
+            if (isAvailable)
                 resources.getColor(R.color.success_color, null)
             else
                 resources.getColor(R.color.text_secondary, null)
         )
     }
 
-    private fun updateLocationVisibility(isVisible: Boolean) {
+    private fun updateLocationVisibility(isAvailable: Boolean) {
         val currentUser = AuthManager.getCurrentUser() ?: return
 
         val locationData = hashMapOf(
-            "isVisible" to isVisible,
+            "isAvailable" to isAvailable,
             "updatedAt" to com.google.firebase.Timestamp.now()
         )
 
@@ -223,11 +224,11 @@ class DriverProfileFragment : Fragment() {
             .set(locationData, SetOptions.merge())
             .addOnSuccessListener {
                 if (!isAdded) return@addOnSuccessListener
-                updateLocationStatusText(isVisible)
+                updateLocationStatusText(isAvailable)
             }
             .addOnFailureListener {
                 if (isAdded) {
-                    locationToggle.isChecked = !isVisible
+                    locationToggle.isChecked = !isAvailable
                     Toast.makeText(context, "Failed to update location setting", Toast.LENGTH_SHORT)
                         .show()
                 }
@@ -241,19 +242,22 @@ class DriverProfileFragment : Fragment() {
     }
 
     private fun uploadImage(uid: String) {
-        val imageRef = storage.reference.child("profile_images/$uid.jpg")
-
         selectedImageUri?.let { uri ->
-            imageRef.putFile(uri)
-                .addOnSuccessListener {
-                    imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
-                        saveProfileToFirestore(uid, downloadUrl.toString())
-                    }
-                }
-                .addOnFailureListener {
+            CloudinaryConfig.uploadImageUnsigned(
+                context = requireContext(),
+                imageUri = uri,
+                onSuccess = { url ->
+                    saveProfileToFirestore(uid, url)
+                },
+                onError = {
                     progressBar.visibility = View.GONE
                     Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+                },
+                onProgress = { progress ->
+                    // Update progress if needed
+                    // You can show upload progress here
                 }
+            )
         }
     }
 

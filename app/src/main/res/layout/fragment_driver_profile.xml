@@ -38,7 +38,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/person_24px"
                         android:background="@color/background_color"
                         android:padding="8dp"
                         app:shapeAppearanceOverlay="@style/CircularImageView"
