@@ -12,37 +12,19 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.example.sakaylink.app.repository.LocationRepository
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.launch
 
 class PassengerDashboardActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationManager: com.example.sakaylink.app.utils.LocationManager
-
-    // Permission request launcher
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
-        val coarseLocationGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
-
-        when {
-            fineLocationGranted || coarseLocationGranted -> {
-                // Permissions granted, proceed to check GPS
-                checkGpsEnabled()
-            }
-            else -> {
-                Toast.makeText(
-                    this,
-                    "Location permission required for app functionality",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
-    }
+    private lateinit var locationRepository: LocationRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +33,7 @@ class PassengerDashboardActivity : AppCompatActivity() {
         // Initialize location services
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         locationManager = com.example.sakaylink.app.utils.LocationManager(this, fusedLocationClient)
+        locationRepository = LocationRepository()
 
         bottomNavigation = findViewById(R.id.bottom_navigation)
         bottomNavigation.setOnItemSelectedListener { item ->
@@ -74,85 +57,19 @@ class PassengerDashboardActivity : AppCompatActivity() {
                 else -> false
             }
         }
-
-        checkLocationPermission()
-    }
-
-    private fun checkLocationPermission() {
-        val hasFineLocation = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
-        val hasCoarseLocation = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-
-        when {
-            hasFineLocation || hasCoarseLocation -> {
-                checkGpsEnabled()
-            }
-            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
-                showPermissionRationale()
-            }
-            else -> {
-                requestPermissionLauncher.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
-                )
-            }
-        }
-    }
-
-    private fun showPermissionRationale() {
-        AlertDialog.Builder(this)
-            .setTitle("Location Permission Needed")
-            .setMessage("This app requires location permission to show nearby drivers and provide ride services.")
-            .setPositiveButton("OK") { _, _ ->
-                requestPermissionLauncher.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
-                )
-            }
-            .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
-            .create()
-            .show()
-    }
-
-    private fun checkGpsEnabled() {
-        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-
-        if (!isGpsEnabled) {
-            showGpsEnableDialog()
-        } else {
-            replaceFragment(PassengerMapFragment())
-        }
-    }
-
-    private fun showGpsEnableDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("Enable GPS")
-            .setMessage("Location services are required for this app. Please enable GPS.")
-            .setPositiveButton("Settings") { _, _ ->
-                startActivity(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .create()
-            .show()
+        replaceFragment(PassengerMapFragment())
     }
 
     private fun replaceFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        lifecycleScope.launch {
+            locationRepository.setUserOffline()
+        }
     }
 }
