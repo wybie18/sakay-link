@@ -17,7 +17,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.suspendCancellableCoroutine
 
 class LocationManager(
     private val context: Context,
@@ -130,9 +129,9 @@ class LocationManager(
     }
 
     /**
-     * Check if location permissions are granted
+     * Check if location permissions are granted (made public)
      */
-    private fun hasLocationPermissions(): Boolean {
+    fun hasLocationPermissions(): Boolean {
         val hasGrantedFineLocationPermission = ContextCompat.checkSelfPermission(
             context,
             android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -147,9 +146,9 @@ class LocationManager(
     }
 
     /**
-     * Check if GPS is enabled
+     * Check if GPS is enabled (made public)
      */
-    private fun isGpsEnabled(): Boolean {
+    fun isGpsEnabled(): Boolean {
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
