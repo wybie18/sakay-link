@@ -11,9 +11,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.example.sakaylink.app.CloudinaryConfig
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.SetOptions
 import java.text.SimpleDateFormat
@@ -22,7 +22,6 @@ import java.util.*
 class DriverSetupActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
-    private lateinit var storage: FirebaseStorage
 
     private lateinit var tvLicenseSelected : TextView
     private lateinit var tvBackgroundCheckSelected : TextView
@@ -38,7 +37,6 @@ class DriverSetupActivity : AppCompatActivity() {
     private lateinit var etVehicleYear : EditText
     private lateinit var etLicenseNumber : EditText
     private lateinit var etLicenseExpiry : EditText
-
 
     private var driverLicenseUri: Uri? = null
     private var backgroundCheckUri: Uri? = null
@@ -71,7 +69,6 @@ class DriverSetupActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
-        storage = FirebaseStorage.getInstance()
 
         tvLicenseSelected = findViewById(R.id.tvLicenseSelected)
         tvBackgroundCheckSelected = findViewById(R.id.tvBackgroundCheckSelected)
@@ -197,51 +194,58 @@ class DriverSetupActivity : AppCompatActivity() {
         progressBar.visibility = android.view.View.VISIBLE
 
         // Upload files first, then save driver data
-        uploadDriverDocuments(currentUser.uid) { licenseUrl, backgroundCheckUrl ->
+        uploadDriverDocumentsToCloudinary(currentUser.uid) { licenseUrl, backgroundCheckUrl ->
             updateDriverDocument(currentUser.uid, licenseUrl, backgroundCheckUrl)
         }
     }
 
-    private fun uploadDriverDocuments(uid: String, callback: (String?, String?) -> Unit) {
-        val storageRef = storage.reference.child("drivers/$uid")
+    private fun uploadDriverDocumentsToCloudinary(uid: String, callback: (String?, String?) -> Unit) {
         var licenseUrl: String? = null
         var backgroundCheckUrl: String? = null
         var uploadCount = 0
         val totalUploads = if (backgroundCheckUri != null) 2 else 1
 
-        // Upload driver license
+        // Upload driver license to Cloudinary
         driverLicenseUri?.let { uri ->
-            val licenseRef = storageRef.child("driver_license.jpg")
-            licenseRef.putFile(uri)
-                .addOnSuccessListener {
-                    licenseRef.downloadUrl.addOnSuccessListener { downloadUrl ->
-                        licenseUrl = downloadUrl.toString()
-                        uploadCount++
-                        if (uploadCount == totalUploads) {
-                            callback(licenseUrl, backgroundCheckUrl)
-                        }
+            CloudinaryConfig.uploadImageUnsigned(
+                context = this,
+                imageUri = uri,
+                onSuccess = { url ->
+                    licenseUrl = url
+                    uploadCount++
+                    if (uploadCount == totalUploads) {
+                        callback(licenseUrl, backgroundCheckUrl)
                     }
+                },
+                onError = { error ->
+                    showError("Failed to upload driver license: $error")
+                },
+                onProgress = { progress ->
+                    // Update progress if needed
+                    // You can show upload progress here
                 }
-                .addOnFailureListener { e ->
-                    showError("Failed to upload driver license: ${e.message}")
-                }
+            )
         }
-        // Upload background check if selected
+
+        // Upload background check to Cloudinary if selected
         backgroundCheckUri?.let { uri ->
-            val backgroundRef = storageRef.child("background_check.pdf")
-            backgroundRef.putFile(uri)
-                .addOnSuccessListener {
-                    backgroundRef.downloadUrl.addOnSuccessListener { downloadUrl ->
-                        backgroundCheckUrl = downloadUrl.toString()
-                        uploadCount++
-                        if (uploadCount == totalUploads) {
-                            callback(licenseUrl, backgroundCheckUrl)
-                        }
+            CloudinaryConfig.uploadImageUnsigned(
+                context = this,
+                imageUri = uri,
+                onSuccess = { url ->
+                    backgroundCheckUrl = url
+                    uploadCount++
+                    if (uploadCount == totalUploads) {
+                        callback(licenseUrl, backgroundCheckUrl)
                     }
+                },
+                onError = { error ->
+                    showError("Failed to upload background check: $error")
+                },
+                onProgress = { progress ->
+                    // Update progress if needed
                 }
-                .addOnFailureListener { e ->
-                    showError("Failed to upload background check: ${e.message}")
-                }
+            )
         } ?: run {
             // No background check to upload
             uploadCount++
