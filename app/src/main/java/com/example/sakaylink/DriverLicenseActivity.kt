@@ -15,28 +15,31 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.example.sakaylink.app.CloudinaryConfig
 import com.example.sakaylink.app.utils.AuthManager
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import java.util.*
 
 class DriverLicenseActivity : AppCompatActivity() {
 
     private lateinit var firestore: FirebaseFirestore
-    private lateinit var storage: FirebaseStorage
 
     private lateinit var licenseNumberEditText: EditText
     private lateinit var expiryDateEditText: EditText
     private lateinit var licenseImageView: ImageView
+    private lateinit var backgroundCheckImageView: ImageView
     private lateinit var uploadLicenseButton: Button
+    private lateinit var uploadBackgroundCheckButton: Button
     private lateinit var saveButton: Button
     private lateinit var cancelButton: Button
     private lateinit var progressBar: ProgressBar
     private lateinit var licenseImageLabel: TextView
+    private lateinit var backgroundCheckImageLabel: TextView
 
     private var selectedLicenseUri: Uri? = null
+    private var selectedBackgroundCheckUri: Uri? = null
     private var licenseExpiryDate: Date? = null
 
     private val imagePickerLauncher = registerForActivityResult(
@@ -51,6 +54,22 @@ class DriverLicenseActivity : AppCompatActivity() {
                 licenseImageView.clearColorFilter()
                 licenseImageLabel.text = "License image selected"
                 licenseImageLabel.setTextColor(resources.getColor(R.color.success_color, null))
+            }
+        }
+    }
+
+    private val backgroundCheckImagePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                selectedBackgroundCheckUri = uri
+                Glide.with(this)
+                    .load(uri)
+                    .into(backgroundCheckImageView)
+                backgroundCheckImageView.clearColorFilter()
+                backgroundCheckImageLabel.text = "Background check image selected"
+                backgroundCheckImageLabel.setTextColor(resources.getColor(R.color.success_color, null))
             }
         }
     }
@@ -81,18 +100,20 @@ class DriverLicenseActivity : AppCompatActivity() {
 
     private fun initializeFirebase() {
         firestore = FirebaseFirestore.getInstance()
-        storage = FirebaseStorage.getInstance()
     }
 
     private fun initializeViews() {
         licenseNumberEditText = findViewById(R.id.license_number_edit_text)
         expiryDateEditText = findViewById(R.id.expiry_date_edit_text)
         licenseImageView = findViewById(R.id.license_image_view)
+        backgroundCheckImageView = findViewById(R.id.background_check_image_view)
         uploadLicenseButton = findViewById(R.id.upload_license_button)
+        uploadBackgroundCheckButton = findViewById(R.id.upload_background_check_button)
         saveButton = findViewById(R.id.save_button)
         cancelButton = findViewById(R.id.cancel_button)
         progressBar = findViewById(R.id.progress_bar)
         licenseImageLabel = findViewById(R.id.license_image_label)
+        backgroundCheckImageLabel = findViewById(R.id.background_check_image_label)
     }
 
     private fun setupClickListeners() {
@@ -108,6 +129,12 @@ class DriverLicenseActivity : AppCompatActivity() {
             val intent = Intent(Intent.ACTION_PICK)
             intent.type = "image/*"
             imagePickerLauncher.launch(intent)
+        }
+
+        uploadBackgroundCheckButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "image/*"
+            backgroundCheckImagePickerLauncher.launch(intent)
         }
 
         expiryDateEditText.setOnClickListener {
@@ -154,6 +181,7 @@ class DriverLicenseActivity : AppCompatActivity() {
                         val licenseNumber = it["licenseNumber"] as? String ?: ""
                         val licenseExpiry = it["licenseExpiry"] as? Timestamp
                         val driverLicenseUrl = it["driverLicenseUrl"] as? String ?: ""
+                        val backgroundCheckUrl = it["backgroundCheckUrl"] as? String ?: ""
 
                         licenseNumberEditText.setText(licenseNumber)
 
@@ -172,6 +200,15 @@ class DriverLicenseActivity : AppCompatActivity() {
                                 .into(licenseImageView)
                             licenseImageLabel.text = "Current license image"
                             licenseImageLabel.setTextColor(resources.getColor(R.color.text_secondary, null))
+                        }
+
+                        if (backgroundCheckUrl.isNotEmpty()) {
+                            Glide.with(this)
+                                .load(backgroundCheckUrl)
+                                .placeholder(R.drawable.image_24px)
+                                .into(backgroundCheckImageView)
+                            backgroundCheckImageLabel.text = "Current background check image"
+                            backgroundCheckImageLabel.setTextColor(resources.getColor(R.color.text_secondary, null))
                         }
                     }
                 }
@@ -198,31 +235,72 @@ class DriverLicenseActivity : AppCompatActivity() {
 
         progressBar.visibility = View.VISIBLE
 
-        if (selectedLicenseUri != null) {
-            uploadLicenseImage(currentUser.uid, licenseNumber)
+        if (selectedLicenseUri != null || selectedBackgroundCheckUri != null) {
+            uploadDriverDocumentsToCloudinary(currentUser.uid) { licenseUrl, backgroundCheckUrl ->
+                saveCredentialsToFirestore(currentUser.uid, licenseNumber, licenseUrl, backgroundCheckUrl)
+            }
         } else {
-            saveCredentialsToFirestore(currentUser.uid, licenseNumber, null)
+            saveCredentialsToFirestore(currentUser.uid, licenseNumber)
         }
     }
 
-    private fun uploadLicenseImage(uid: String, licenseNumber: String) {
-        val imageRef = storage.reference.child("driver_licenses/$uid.jpg")
+    private fun uploadDriverDocumentsToCloudinary(uid: String, callback: (String?, String?) -> Unit) {
+        var licenseUrl: String? = null
+        var backgroundCheckUrl: String? = null
+        var uploadCount = 0
+        val totalUploads = (if (selectedLicenseUri != null) 1 else 0) + (if (selectedBackgroundCheckUri != null) 1 else 0)
 
+        if (totalUploads == 0) {
+            callback(null, null)
+            return
+        }
+
+        // Upload driver license to Cloudinary
         selectedLicenseUri?.let { uri ->
-            imageRef.putFile(uri)
-                .addOnSuccessListener {
-                    imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
-                        saveCredentialsToFirestore(uid, licenseNumber, downloadUrl.toString())
+            CloudinaryConfig.uploadImageUnsigned(
+                context = this,
+                imageUri = uri,
+                onSuccess = { url ->
+                    licenseUrl = url
+                    uploadCount++
+                    if (uploadCount == totalUploads) {
+                        callback(licenseUrl, backgroundCheckUrl)
                     }
-                }
-                .addOnFailureListener {
+                },
+                onError = { error ->
                     progressBar.visibility = View.GONE
-                    Toast.makeText(this, "Failed to upload license image", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Failed to upload driver license: $error", Toast.LENGTH_SHORT).show()
+                },
+                onProgress = { progress ->
+                    // Update progress if needed
                 }
+            )
+        }
+
+        // Upload background check to Cloudinary if selected
+        selectedBackgroundCheckUri?.let { uri ->
+            CloudinaryConfig.uploadImageUnsigned(
+                context = this,
+                imageUri = uri,
+                onSuccess = { url ->
+                    backgroundCheckUrl = url
+                    uploadCount++
+                    if (uploadCount == totalUploads) {
+                        callback(licenseUrl, backgroundCheckUrl)
+                    }
+                },
+                onError = { error ->
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(this, "Failed to upload background check: $error", Toast.LENGTH_SHORT).show()
+                },
+                onProgress = { progress ->
+                    // Update progress if needed
+                }
+            )
         }
     }
 
-    private fun saveCredentialsToFirestore(uid: String, licenseNumber: String, licenseUrl: String?) {
+    private fun saveCredentialsToFirestore(uid: String, licenseNumber: String, licenseUrl: String? = null, backgroundCheckUrl: String? = null) {
         val credentials = mutableMapOf<String, Any>(
             "licenseNumber" to licenseNumber,
             "licenseExpiry" to Timestamp(licenseExpiryDate!!)
@@ -230,6 +308,10 @@ class DriverLicenseActivity : AppCompatActivity() {
 
         licenseUrl?.let {
             credentials["driverLicenseUrl"] = it
+        }
+
+        backgroundCheckUrl?.let {
+            credentials["backgroundCheckUrl"] = it
         }
 
         val updates = mapOf(
