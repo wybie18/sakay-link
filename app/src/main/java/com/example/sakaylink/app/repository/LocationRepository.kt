@@ -52,13 +52,13 @@ class LocationRepository {
                 hashMapOf(
                     "geo" to geoPoint,
                     "updatedAt" to FieldValue.serverTimestamp(),
-                    "isAvailable" to true
+//                    "isAvailable" to true
                 )
             } else {
                 hashMapOf(
                     "geo" to geoPoint,
                     "updatedAt" to FieldValue.serverTimestamp(),
-                    "isVisible" to true
+//                    "isVisible" to true
                 )
             }
 
@@ -115,7 +115,13 @@ class LocationRepository {
                 .document(DRIVERS_SUBCOLLECTION)
                 .collection(DRIVERS_SUBCOLLECTION)
                 .document(uid)
-                .update("isAvailable", isAvailable, "updatedAt", FieldValue.serverTimestamp())
+                .set(
+                    mapOf(
+                        "isAvailable" to isAvailable,
+                        "updatedAt" to FieldValue.serverTimestamp()
+                    ),
+                    SetOptions.merge()
+                )
                 .await()
 
             Log.d(TAG, "Driver availability updated: $isAvailable")
@@ -140,7 +146,13 @@ class LocationRepository {
                 .document(PASSENGERS_SUBCOLLECTION)
                 .collection(PASSENGERS_SUBCOLLECTION)
                 .document(uid)
-                .update("isVisible", isVisible, "updatedAt", FieldValue.serverTimestamp())
+                .set(
+                    mapOf(
+                        "isVisible" to isVisible,
+                        "updatedAt" to FieldValue.serverTimestamp()
+                    ),
+                    SetOptions.merge()
+                )
                 .await()
 
             Log.d(TAG, "Passenger visibility updated: $isVisible")
@@ -392,6 +404,85 @@ class LocationRepository {
 
         } catch (e: Exception) {
             Log.e(TAG, "Error getting driver info", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Check if current user is available (for drivers) or visible (for passengers)
+     * @return Result<Boolean> - true if user is available/visible, false otherwise
+     */
+    suspend fun isUserAvailableOrVisible(): Result<Boolean> {
+        return try {
+            val currentUser = auth.currentUser
+                ?: return Result.failure(Exception("User not authenticated"))
+
+            val uid = currentUser.uid
+            val userRole = getUserRole().getOrNull()
+                ?: return Result.failure(Exception("User role not found"))
+
+            val subcollection = if (userRole == "driver") DRIVERS_SUBCOLLECTION else PASSENGERS_SUBCOLLECTION
+
+            val document = firestore.collection(LOCATIONS_COLLECTION)
+                .document(subcollection)
+                .collection(subcollection)
+                .document(uid)
+                .get()
+                .await()
+
+            if (!document.exists()) {
+                Log.d(TAG, "User document not found, returning false")
+                return Result.success(false)
+            }
+
+            val status = if (userRole == "driver") {
+                document.getBoolean("isAvailable") ?: false
+            } else {
+                document.getBoolean("isVisible") ?: false
+            }
+
+            Log.d(TAG, "User $userRole status: $status")
+            Result.success(status)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking user availability/visibility", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Check if a specific user is available (for drivers) or visible (for passengers)
+     * @param targetUid The UID of the user to check
+     * @param targetRole The role of the target user ("driver" or "passenger")
+     * @return Result<Boolean> - true if user is available/visible, false otherwise
+     */
+    suspend fun isUserAvailableOrVisible(targetUid: String, targetRole: String): Result<Boolean> {
+        return try {
+            val subcollection = if (targetRole == "driver") DRIVERS_SUBCOLLECTION else PASSENGERS_SUBCOLLECTION
+
+            val document = firestore.collection(LOCATIONS_COLLECTION)
+                .document(subcollection)
+                .collection(subcollection)
+                .document(targetUid)
+                .get()
+                .await()
+
+            if (!document.exists()) {
+                Log.d(TAG, "Target user document not found, returning false")
+                return Result.success(false)
+            }
+
+            val status = if (targetRole == "driver") {
+                document.getBoolean("isAvailable") ?: false
+            } else {
+                document.getBoolean("isVisible") ?: false
+            }
+
+            Log.d(TAG, "Target user $targetRole status: $status")
+            Result.success(status)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking target user availability/visibility", e)
             Result.failure(e)
         }
     }
