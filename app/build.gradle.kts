@@ -93,6 +93,8 @@ dependencies {
     implementation(libs.android)
     implementation(libs.maps.compose)
 
+    implementation(libs.cloudinary.android)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
