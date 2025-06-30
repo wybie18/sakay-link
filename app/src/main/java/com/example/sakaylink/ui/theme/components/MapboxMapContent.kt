@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.foundation.background
@@ -35,8 +36,6 @@ import com.example.sakaylink.R
 import com.example.sakaylink.app.repository.DriverInfo
 import com.example.sakaylink.app.repository.LocationRepository
 import com.example.sakaylink.app.utils.LocationManager
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraBoundsOptions
 import com.mapbox.maps.CoordinateBounds
@@ -53,7 +52,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
 
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun MapboxMapContent(
     locationManager: LocationManager,
@@ -64,16 +62,10 @@ fun MapboxMapContent(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    val locationPermissions = rememberMultiplePermissionsState(
-        permissions = listOf(
-            android.Manifest.permission.ACCESS_COARSE_LOCATION,
-            android.Manifest.permission.ACCESS_FINE_LOCATION
-        )
-    )
-
     var availableDrivers by remember { mutableStateOf<List<com.example.sakaylink.app.repository.UserLocation>>(emptyList()) }
     var visiblePassengers by remember { mutableStateOf<List<com.example.sakaylink.app.repository.UserLocation>>(emptyList()) }
     var isLocationUpdating by remember { mutableStateOf(false) }
+    var hasPermissions by remember { mutableStateOf(locationManager.hasLocationPermissions()) }
 
     // Dialog states
     var showDriverDialog by remember { mutableStateOf(false) }
@@ -86,6 +78,11 @@ fun MapboxMapContent(
             zoom(14.0)
             pitch(0.0)
         }
+    }
+
+    // Check permissions periodically
+    LaunchedEffect(Unit) {
+        hasPermissions = locationManager.hasLocationPermissions()
     }
 
     LaunchedEffect(Unit) {
@@ -101,26 +98,34 @@ fun MapboxMapContent(
         }
     }
 
-    LaunchedEffect(locationPermissions.allPermissionsGranted) {
-        if (locationPermissions.allPermissionsGranted && !isLocationUpdating) {
+    LaunchedEffect(hasPermissions) {
+        if (hasPermissions && locationManager.isGpsEnabled() && !isLocationUpdating) {
             isLocationUpdating = true
-            locationManager.getLocationUpdates().collectLatest { location ->
-                try {
-                    locationRepository.saveUserLocation(
-                        latitude = location.latitude,
-                        longitude = location.longitude,
-                        userRole = role
-                    ).fold(
-                        onSuccess = {
-//                            Toast.makeText(context, "Location saved successfully!", Toast.LENGTH_SHORT).show()
-                        },
-                        onFailure = { error ->
-                            Toast.makeText(context, "Failed to save location: ${error.message}", Toast.LENGTH_SHORT).show()
-                        }
-                    )
-                } catch (e: Exception) {
-                    Toast.makeText(context, "Error getting location: ${e.message}", Toast.LENGTH_SHORT).show()
+            try {
+                locationManager.getLocationUpdates().collectLatest { location ->
+                    try {
+                        locationRepository.saveUserLocation(
+                            latitude = location.latitude,
+                            longitude = location.longitude,
+                            userRole = role
+                        ).fold(
+                            onSuccess = {
+                                // Location saved successfully
+                            },
+                            onFailure = { error ->
+//                                Toast.makeText(context, "Failed to save location: ${error.message}", Toast.LENGTH_SHORT).show()
+                                Log.e("LocationError", "Failed to save location", error)
+                            }
+                        )
+                    } catch (e: Exception) {
+//                        Toast.makeText(context, "Error processing location: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Log.e("LocationError", "Error processing location", e)
+                    }
                 }
+            } catch (e: Exception) {
+//                Toast.makeText(context, "Error starting location updates: ${e.message}", Toast.LENGTH_SHORT).show()
+                Log.e("LocationError", "Error starting location updates", e)
+                isLocationUpdating = false
             }
         }
     }
@@ -160,16 +165,20 @@ fun MapboxMapContent(
             modifier = Modifier.fillMaxSize(),
             mapViewportState = mapViewportState,
         ) {
-            MapEffect(key1 = Unit) { mapView ->
-                mapView.location.updateSettings {
-                    locationPuck = createDefault2DPuck(withBearing = true)
-                    enabled = true
-                    puckBearing = PuckBearing.COURSE
-                    puckBearingEnabled = true
-                }
-
-                if (locationPermissions.allPermissionsGranted) {
+            MapEffect(key1 = hasPermissions) { mapView ->
+                if (hasPermissions && locationManager.isGpsEnabled()) {
+                    mapView.location.updateSettings {
+                        locationPuck = createDefault2DPuck(withBearing = true)
+                        enabled = true
+                        puckBearing = PuckBearing.COURSE
+                        puckBearingEnabled = true
+                    }
                     mapViewportState.transitionToFollowPuckState()
+                } else {
+                    // Disable location puck if no permissions
+                    mapView.location.updateSettings {
+                        enabled = false
+                    }
                 }
 
                 val cameraBoundsOptions = CameraBoundsOptions.Builder()
@@ -248,6 +257,7 @@ fun MapboxMapContent(
 
                             pointAnnotationManager.addClickListener { clickedMarker ->
                                 if (clickedMarker.id == marker.id) {
+                                    Toast.makeText(context, "Driver clicked", Toast.LENGTH_SHORT).show()
                                     handleDriverClick(driver.uid)
                                 }
                                 true
@@ -260,7 +270,15 @@ fun MapboxMapContent(
 
         IconButton(
             onClick = {
-                mapViewportState.transitionToFollowPuckState()
+                if (hasPermissions && locationManager.isGpsEnabled()) {
+                    mapViewportState.transitionToFollowPuckState()
+                } else {
+                    Toast.makeText(
+                        context,
+                        "Location permissions required to center on your location",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -270,7 +288,7 @@ fun MapboxMapContent(
             Icon(
                 imageVector = Icons.Filled.LocationOn,
                 contentDescription = "Center on My Location",
-                tint = Color.Black
+                tint = if (hasPermissions && locationManager.isGpsEnabled()) Color.Black else Color.Gray
             )
         }
 
